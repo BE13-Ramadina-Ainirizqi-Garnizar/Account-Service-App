@@ -58,7 +58,7 @@ func main() {
 		fmt.Scanln(&Password)
 		controller.Login(dbConnection, NoTelp, Password)
 
-		fmt.Println("Silakan Pilih Menu :\n1. Lihat Profil \n2. Update Profil \n3. Delete Profil \n4. Lihat Profil Teman")
+		fmt.Println("Silakan Pilih Menu :\n1. Lihat Profil \n2. Update Profil \n3. Delete Profil \n4. Lihat Profil Teman \n5. Cek Saldo \n6. Transfer Saldo")
 		var pilihan2 int
 		fmt.Scanln(&pilihan2)
 
@@ -125,6 +125,23 @@ func main() {
 			for _, value := range dataTeman {
 				fmt.Printf("Username: %s Nama: %s Gender: %s Email: %s", value.Username, value.Nama, value.Gender, value.Email)
 			}
+
+		case 5:
+			dataSaldo := controller.CekSaldo(dbConnection, NoTelp)
+
+			fmt.Println("Rp.", dataSaldo)
+
+		case 6:
+			var NoTeman string
+			var Nominal int
+			fmt.Println("Masukkan No. Telp tujuan transfer: ")
+			fmt.Scanln(&NoTeman)
+			fmt.Println("Masukkan Nominal Transfer: ")
+			fmt.Scanln(&Nominal)
+
+			controller.TransferDana(dbConnection, NoTelp, NoTeman, Nominal)
+			controller.SaldoBertambah(dbConnection, NoTeman, Nominal)
+			controller.SaldoBerkurang(dbConnection, NoTelp, Nominal)
 		}
 
 	}

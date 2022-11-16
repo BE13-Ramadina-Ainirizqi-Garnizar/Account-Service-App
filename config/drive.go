@@ -2,7 +2,6 @@ package config
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"os"
 )
@@ -17,8 +16,6 @@ func InitToDB() *sql.DB {
 	errPing := db.Ping()
 	if errPing != nil {
 		log.Fatal("error connecting to database", errPing.Error())
-	} else {
-		fmt.Println("koneksi berhasil")
 	}
 	return db
 }
