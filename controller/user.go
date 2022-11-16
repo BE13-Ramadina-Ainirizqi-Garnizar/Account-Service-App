@@ -5,32 +5,70 @@ import (
 	"fmt"
 	"log"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/BE13-Ramadina-Ainirizqi-Garnizar/Account-Service-App/entity"
 )
+
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
+}
 
 func Register(db *sql.DB, newUser entity.User) (sql.Result, error) {
 	if newUser.Username == "" || newUser.Password == "" || newUser.Nama == "" || newUser.Gender == "" || newUser.NoTelp == "" || newUser.Email == "" {
 		log.Fatal("Input tidak boleh kosong")
 	}
 
-	var query = "insert into users(username, pass_word, nama, gender, no_telp, email) value (?,?,?,?,?,?)"
+	hashedPass, errHashed := HashPassword(newUser.Password)
+	if errHashed != nil {
+		log.Fatal("error hashing", errHashed.Error())
+	}
+
+	var query = "insert into users(username, pass_word, nama, gender, no_telp, email) values (?,?,?,?,?,?)"
 	statement, errPrepare := db.Prepare(query)
 	if errPrepare != nil {
 		log.Fatal("error preparing", errPrepare.Error())
 	}
 
-	result, errExec := statement.Exec(newUser.Username, newUser.Password, newUser.Nama, newUser.Gender, newUser.NoTelp, newUser.Email)
+	result, errExec := statement.Exec(newUser.Username, hashedPass, newUser.Nama, newUser.Gender, newUser.NoTelp, newUser.Email)
 	if errExec != nil {
 		log.Fatal("error executing", errExec.Error())
+	}
+
+	query2 := fmt.Sprintf("select id from users where no_telp = %s", newUser.NoTelp)
+	result2 := db.QueryRow(query2)
+
+	var id int
+	var saldo int = 0
+	errScan := result2.Scan(&id)
+	if errScan != nil {
+		log.Fatal("error scan", errScan.Error())
+	}
+
+	var query3 = ("insert into dompet(user_id, saldo) values (?,?)")
+	statement2, errPrepare2 := db.Prepare(query3)
+	if errPrepare2 != nil {
+		log.Fatal("error prepare", errPrepare2.Error())
+	}
+
+	result3, errExec2 := statement2.Exec(id, saldo)
+	if errExec2 != nil {
+		log.Fatal("error execute", errExec2.Error())
 	} else {
-		row, _ := result.RowsAffected()
+		row, _ := result3.RowsAffected()
 		if row > 0 {
-			fmt.Println("Register Berhasil")
+			fmt.Println("Register Berhasil!")
 		} else {
-			fmt.Println("Register Gagal")
+			fmt.Println("Register Gagal.")
 		}
 	}
 	return result, nil
+}
+
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }
 
 func Login(db *sql.DB, NoTelp string, Password string) (string, error) {
@@ -54,18 +92,21 @@ func Login(db *sql.DB, NoTelp string, Password string) (string, error) {
 		}
 	}
 
+	cekPass := CheckPasswordHash(Password, pass)
+
 	if pass != "" {
-		if pass == Password {
-			fmt.Println("Login Berhasil")
+		if cekPass {
+			fmt.Println("Login Berhasil!")
 			return "", nil
 		} else {
-			log.Fatal("Password Salah")
+			log.Fatal("Password Salah.")
 			return "", err
 		}
 	} else {
 		log.Fatal("Nomor Tidak Terdaftar")
 		return "", err
 	}
+
 }
 
 func ReadAccount(db *sql.DB, NoTelp string) ([]entity.User, error) {
