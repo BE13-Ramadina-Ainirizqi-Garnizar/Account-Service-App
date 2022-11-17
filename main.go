@@ -58,7 +58,7 @@ func main() {
 		fmt.Scanln(&Password)
 		controller.Login(dbConnection, NoTelp, Password)
 
-		fmt.Println("Silakan Pilih Menu :\n1. Lihat Profil \n2. Update Profil \n3. Delete Profil \n4. Lihat Profil Teman \n5. Cek Saldo \n6. Transfer Saldo")
+		fmt.Println("Silakan Pilih Menu :\n1. Lihat Profil \n2. Update Profil \n3. Delete Profil \n4. Lihat Profil Teman \n5. Cek Saldo \n6. Transfer Saldo \n7. Riwayat Transfer")
 		var pilihan2 int
 		fmt.Scanln(&pilihan2)
 
@@ -142,6 +142,17 @@ func main() {
 			controller.TransferDana(dbConnection, NoTelp, NoTeman, Nominal)
 			controller.SaldoBertambah(dbConnection, NoTeman, Nominal)
 			controller.SaldoBerkurang(dbConnection, NoTelp, Nominal)
+
+		case 7:
+			dataRiwayat, errDataRiwayat := controller.HistoryTransfer(dbConnection, NoTelp)
+			if errDataRiwayat != nil {
+				log.Fatal("error get all data")
+			}
+
+			for _, value := range dataRiwayat {
+				fmt.Printf("ID Transaksi = %d Nama Pengirim = %s Nama Penerima = %s Nominal Transfer = Rp. %d Created at = %s\n", value.IDTransfer, value.NamaPengirim, value.NamaPenerima, value.SaldoTransfer, value.CreatedAt)
+			}
+
 		}
 
 	}

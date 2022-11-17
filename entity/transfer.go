@@ -1,8 +1,11 @@
 package entity
 
 type Transfer struct {
-	IDTransfer   string
-	NamaPengirim string
-	NamaPenerima string
-	CreatedAt    string
+	IDTransfer     int
+	UserIDPengirim int
+	UserIDPenerima int
+	NamaPengirim   string
+	NamaPenerima   string
+	SaldoTransfer  int
+	CreatedAt      string
 }
