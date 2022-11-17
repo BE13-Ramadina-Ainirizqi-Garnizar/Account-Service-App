@@ -2,6 +2,7 @@ package controller
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 
@@ -17,23 +18,28 @@ func HashPassword(password string) (string, error) {
 
 func Register(db *sql.DB, newUser entity.User) (sql.Result, error) {
 	if newUser.Username == "" || newUser.Password == "" || newUser.Nama == "" || newUser.Gender == "" || newUser.NoTelp == "" || newUser.Email == "" {
-		log.Fatal("Input tidak boleh kosong")
+		error := errors.New("input tidak boleh kosong")
+		return nil, error
+
 	}
 
 	hashedPass, errHashed := HashPassword(newUser.Password)
 	if errHashed != nil {
-		log.Fatal("error hashing", errHashed.Error())
+		fmt.Println("error hashing", errHashed.Error())
+		return nil, errHashed
 	}
 
 	var query = "insert into users(username, pass_word, nama, gender, no_telp, email) values (?,?,?,?,?,?)"
 	statement, errPrepare := db.Prepare(query)
 	if errPrepare != nil {
-		log.Fatal("error preparing", errPrepare.Error())
+		fmt.Println("error preparing", errPrepare.Error())
+		return nil, errPrepare
 	}
 
 	result, errExec := statement.Exec(newUser.Username, hashedPass, newUser.Nama, newUser.Gender, newUser.NoTelp, newUser.Email)
 	if errExec != nil {
-		log.Fatal("error executing", errExec.Error())
+		fmt.Println("error executing", errExec.Error())
+		return nil, errExec
 	}
 
 	query2 := fmt.Sprintf("select id from users where no_telp = %s", newUser.NoTelp)
@@ -43,18 +49,21 @@ func Register(db *sql.DB, newUser entity.User) (sql.Result, error) {
 	var saldo int = 0
 	errScan := result2.Scan(&id)
 	if errScan != nil {
-		log.Fatal("error scan", errScan.Error())
+		fmt.Println("error scan", errScan.Error())
+		return nil, errScan
 	}
 
 	var query3 = ("insert into dompet(user_id, saldo) values (?,?)")
 	statement2, errPrepare2 := db.Prepare(query3)
 	if errPrepare2 != nil {
-		log.Fatal("error prepare", errPrepare2.Error())
+		fmt.Println("error prepare", errPrepare2.Error())
+		return nil, errPrepare2
 	}
 
 	result3, errExec2 := statement2.Exec(id, saldo)
 	if errExec2 != nil {
-		log.Fatal("error execute", errExec2.Error())
+		fmt.Println("error execute", errExec2.Error())
+		return nil, errExec2
 	} else {
 		row, _ := result3.RowsAffected()
 		if row > 0 {
@@ -74,21 +83,24 @@ func CheckPasswordHash(password, hash string) bool {
 func Login(db *sql.DB, NoTelp string, Password string) (string, error) {
 
 	if NoTelp == "" || Password == "" {
-		log.Fatal("No. HP & Password harus diisi")
+		error := errors.New("input tidak boleh kosong")
+		return "", error
 
 	}
 
 	query := fmt.Sprintf("select pass_word from users where no_telp = %s", NoTelp)
 	result, err := db.Query(query)
 	if err != nil {
-		log.Fatal("error", err.Error())
+		fmt.Println("error", err.Error())
+		return "", err
 	}
 
 	var pass string
 	for result.Next() {
 		errScan := result.Scan(&pass)
 		if errScan != nil {
-			log.Fatal("error scan", errScan.Error())
+			fmt.Println("error scan", errScan.Error())
+			return "", errScan
 		}
 	}
 
@@ -99,11 +111,11 @@ func Login(db *sql.DB, NoTelp string, Password string) (string, error) {
 			fmt.Println("Login Berhasil!")
 			return "", nil
 		} else {
-			log.Fatal("Password Salah.")
+			fmt.Println("Password Salah.")
 			return "", err
 		}
 	} else {
-		log.Fatal("Nomor Tidak Terdaftar")
+		fmt.Println("Nomor Tidak Terdaftar")
 		return "", err
 	}
 
@@ -113,7 +125,8 @@ func ReadAccount(db *sql.DB, NoTelp string) ([]entity.User, error) {
 	query := fmt.Sprintf("select username, nama, gender, email from users where no_telp = %s", NoTelp)
 	result, err := db.Query(query)
 	if err != nil {
-		log.Fatal("error", err.Error())
+		fmt.Println("error", err.Error())
+		return nil, err
 	}
 
 	var dataUser []entity.User
@@ -121,7 +134,8 @@ func ReadAccount(db *sql.DB, NoTelp string) ([]entity.User, error) {
 		var userrow entity.User
 		errScan := result.Scan(&userrow.Username, &userrow.Nama, &userrow.Gender, &userrow.Email)
 		if errScan != nil {
-			log.Fatal("error scan", errScan.Error())
+			fmt.Println("error scan", errScan.Error())
+			return nil, errScan
 		}
 
 		dataUser = append(dataUser, userrow)
@@ -130,15 +144,23 @@ func ReadAccount(db *sql.DB, NoTelp string) ([]entity.User, error) {
 }
 
 func UpdateAcc(db *sql.DB, update entity.User, NoTelp string) (sql.Result, error) {
+	hashedPass, errHashed := HashPassword(update.Password)
+	if errHashed != nil {
+		fmt.Println("error hashing", errHashed.Error())
+		return nil, errHashed
+	}
+
 	query := fmt.Sprintf("Update users set username = ?, pass_word = ?, nama = ?, gender = ?, no_telp = ?, email = ? where no_telp = %s", NoTelp)
 	statement, errPrepare := db.Prepare(query)
 	if errPrepare != nil {
-		log.Fatal("error preparing", errPrepare.Error())
+		fmt.Println("error preparing", errPrepare.Error())
+		return nil, errPrepare
 	}
 
-	result, errExec := statement.Exec(update.Username, update.Password, update.Nama, update.Gender, update.NoTelp, update.Email)
+	result, errExec := statement.Exec(update.Username, hashedPass, update.Nama, update.Gender, update.NoTelp, update.Email)
 	if errExec != nil {
-		log.Fatal("error execute", errExec.Error())
+		fmt.Println("error execute", errExec.Error())
+		return nil, errExec
 	} else {
 		row, _ := result.RowsAffected()
 		if row > 0 {
@@ -151,17 +173,41 @@ func UpdateAcc(db *sql.DB, update entity.User, NoTelp string) (sql.Result, error
 }
 
 func Delete(db *sql.DB, NoTelp string) (sql.Result, error) {
+	query2 := fmt.Sprintf("select id from users where no_telp = %s", NoTelp)
+	result2 := db.QueryRow(query2)
+
+	var id int
+	errScan := result2.Scan(&id)
+	if errScan != nil {
+		log.Fatal("error scan", errScan.Error())
+	}
+
+	var query3 = "delete from dompet where user_id = ?"
+	statement3, errPrepare := db.Prepare(query3)
+	if errPrepare != nil {
+		fmt.Println("error preparing", errPrepare.Error())
+		return nil, errPrepare
+	}
+
+	result3, errExec := statement3.Exec(id)
+	if errExec != nil {
+		fmt.Println("error executing", errExec.Error())
+		return nil, errExec
+	}
+
 	var query = "delete from users where no_telp = ?"
 	statement, errPrepare := db.Prepare(query)
 	if errPrepare != nil {
-		log.Fatal("error preparing", errPrepare.Error())
+		fmt.Println("error preparing", errPrepare.Error())
+		return nil, errPrepare
 	}
 
 	result, errExec := statement.Exec(NoTelp)
 	if errExec != nil {
-		log.Fatal("error executing", errExec.Error())
+		fmt.Println("error executing", errExec.Error())
+		return nil, errExec
 	} else {
-		row, _ := result.RowsAffected()
+		row, _ := result3.RowsAffected()
 		if row > 0 {
 			fmt.Println("Delete Berhasil !")
 		} else {
