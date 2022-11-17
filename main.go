@@ -58,7 +58,7 @@ func main() {
 		fmt.Scanln(&Password)
 		controller.Login(dbConnection, NoTelp, Password)
 
-		fmt.Println("Silakan Pilih Menu :\n1. Lihat Profil \n2. Update Profil \n3. Delete Profil \n4. Lihat Profil Teman \n5. Cek Saldo \n6. Transfer Saldo \n7. Riwayat Transfer")
+		fmt.Println("Silakan Pilih Menu :\n1. Lihat Profil \n2. Update Profil \n3. Delete Profil \n4. Lihat Profil Teman \n5. Cek Saldo \n6. Transfer Saldo \n7. Riwayat Transfer \n8. Top Up \n9. History Top up")
 		var pilihan2 int
 		fmt.Scanln(&pilihan2)
 
@@ -147,12 +147,29 @@ func main() {
 			dataRiwayat, errDataRiwayat := controller.HistoryTransfer(dbConnection, NoTelp)
 			if errDataRiwayat != nil {
 				log.Fatal("error get all data")
+
 			}
 
 			for _, value := range dataRiwayat {
 				fmt.Printf("ID Transaksi = %d Nama Pengirim = %s Nama Penerima = %s Nominal Transfer = Rp. %d Created at = %s\n", value.IDTransfer, value.NamaPengirim, value.NamaPenerima, value.SaldoTransfer, value.CreatedAt)
 			}
+		case 8:
+			var Nominal int
+			fmt.Println("Masukan Nominal: ")
+			fmt.Scanln(&Nominal)
+			controller.TopUp(dbConnection, Nominal, NoTelp)
+			controller.SaldoBertambah(dbConnection, NoTelp, Nominal)
 
+		case 9:
+			dataRiwayat, errDataRiwayat := controller.HistoryTopUp(dbConnection, NoTelp)
+			if errDataRiwayat != nil {
+				log.Fatal("error get all data")
+
+			}
+
+			for _, value := range dataRiwayat {
+				fmt.Printf("ID Transaksi = %d Nama = %s  Nominal Top up = Rp. %d Created at = %s\n", value.IDTopUp, value.Nama, value.SaldoTopUp, value.CreatedAt)
+			}
 		}
 
 	}
