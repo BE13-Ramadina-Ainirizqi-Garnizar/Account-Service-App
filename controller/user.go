@@ -111,12 +111,12 @@ func Login(db *sql.DB, NoTelp string, Password string) (string, error) {
 			fmt.Println("Login Berhasil!")
 			return "", nil
 		} else {
-			fmt.Println("Password Salah.")
-			return "", err
+			error3 := errors.New("password salah")
+			return "", error3
 		}
 	} else {
-		fmt.Println("Nomor Tidak Terdaftar")
-		return "", err
+		error2 := errors.New("nomor tidak terdaftar")
+		return "", error2
 	}
 
 }
@@ -221,7 +221,8 @@ func ProfilTeman(db *sql.DB, HpTeman string) ([]entity.User, error) {
 	query := fmt.Sprintf("select username, nama, gender, email from users where no_telp=%s", HpTeman)
 	result, err := db.Query(query)
 	if err != nil {
-		log.Fatal("error", err.Error())
+		fmt.Println("error", err.Error())
+		return nil, err
 	}
 
 	var dataTeman []entity.User
@@ -229,7 +230,8 @@ func ProfilTeman(db *sql.DB, HpTeman string) ([]entity.User, error) {
 		var userrow entity.User
 		errScan := result.Scan(&userrow.Username, &userrow.Nama, &userrow.Gender, &userrow.Email)
 		if errScan != nil {
-			log.Fatal("error scan", errScan.Error())
+			fmt.Println("error scan", errScan.Error())
+			return nil, errScan
 		}
 		dataTeman = append(dataTeman, userrow)
 	}

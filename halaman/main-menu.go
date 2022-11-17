@@ -96,10 +96,12 @@ func HalMainMenu(db *sql.DB, NoTelp string) {
 		if errReadTeman != nil {
 			fmt.Println("error read teman", errReadTeman.Error())
 			HalMainMenu(db, NoTelp)
-		}
+		} else {
 
-		for _, value := range dataTeman {
-			fmt.Printf("Username: %s Nama: %s Gender: %s Email: %s\n\n\n", value.Username, value.Nama, value.Gender, value.Email)
+			for _, value := range dataTeman {
+				fmt.Printf("Username: %s Nama: %s Gender: %s Email: %s\n\n\n", value.Username, value.Nama, value.Gender, value.Email)
+
+			}
 			var kembali int
 			fmt.Println("Masukkan 0 untuk kembali ke main menu: ")
 			fmt.Scanln(&kembali)
@@ -164,14 +166,14 @@ func HalMainMenu(db *sql.DB, NoTelp string) {
 		}
 
 	case 7:
-		dataRiwayat, errDataRiwayat := controller.HistoryTransfer(db, NoTelp)
-		if errDataRiwayat != nil {
-			fmt.Println(errDataRiwayat.Error())
+		dataRiwayat, errHistoryTransfer := controller.HistoryTransfer(db, NoTelp)
+		if errHistoryTransfer != nil {
 			HalMainMenu(db, NoTelp)
-		}
+		} else {
+			for _, value := range dataRiwayat {
+				fmt.Printf("ID Transaksi = %d Nama Pengirim = %s Nama Penerima = %s Nominal Transfer = Rp. %d Created at = %s\n", value.IDTransfer, value.NamaPengirim, value.NamaPenerima, value.SaldoTransfer, value.CreatedAt)
 
-		for _, value := range dataRiwayat {
-			fmt.Printf("ID Transaksi = %d Nama Pengirim = %s Nama Penerima = %s Nominal Transfer = Rp. %d Created at = %s\n", value.IDTransfer, value.NamaPengirim, value.NamaPenerima, value.SaldoTransfer, value.CreatedAt)
+			}
 			var kembali int
 			fmt.Println("Masukkan 0 untuk kembali ke main menu: ")
 			fmt.Scanln(&kembali)
@@ -197,12 +199,13 @@ func HalMainMenu(db *sql.DB, NoTelp string) {
 	case 9:
 		dataRiwayat, errDataRiwayat := controller.HistoryTopUp(db, NoTelp)
 		if errDataRiwayat != nil {
-			fmt.Println(errDataRiwayat.Error())
+			fmt.Println("Tidak ada data untuk ditampilkan")
 			HalMainMenu(db, NoTelp)
-		}
+		} else {
 
-		for _, value := range dataRiwayat {
-			fmt.Printf("ID Transaksi = %d Nama = %s  Nominal Top up = Rp. %d Created at = %s\n", value.IDTopUp, value.Nama, value.SaldoTopUp, value.CreatedAt)
+			for _, value := range dataRiwayat {
+				fmt.Printf("ID Transaksi = %d Nama = %s  Nominal Top up = Rp. %d Created at = %s\n", value.IDTopUp, value.Nama, value.SaldoTopUp, value.CreatedAt)
+			}
 			var kembali int
 			fmt.Println("Masukkan 0 untuk kembali ke main menu: ")
 			fmt.Scanln(&kembali)

@@ -19,8 +19,6 @@ func HalLogin(db *sql.DB) {
 	if errLog != nil {
 		fmt.Println(errLog)
 		HalUtama(db)
-	} else {
-		HalMainMenu(db, NoTelp)
 	}
-
+	HalMainMenu(db, NoTelp)
 }
