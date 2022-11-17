@@ -9,6 +9,11 @@ import (
 )
 
 func TransferDana(db *sql.DB, NoTelp string, TelpTeman string, Nominal int) (sql.Result, error) {
+	if TelpTeman == "" {
+		error := errors.New("input tidak boleh kosong")
+		return nil, error
+
+	}
 
 	saldoNow, errCek := CekSaldo(db, NoTelp)
 	if saldoNow < Nominal {
@@ -69,7 +74,7 @@ func HistoryTransfer(db *sql.DB, NoTelp string) ([]entity.Transfer, error) {
 	var id int
 	errScan1 := result.Scan(&id)
 	if errScan1 != nil {
-		fmt.Println("Nomor Telpon tidak terdaftar")
+		fmt.Println("error scan")
 		return nil, errScan1
 	}
 

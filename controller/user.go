@@ -144,6 +144,12 @@ func ReadAccount(db *sql.DB, NoTelp string) ([]entity.User, error) {
 }
 
 func UpdateAcc(db *sql.DB, update entity.User, NoTelp string) (sql.Result, error) {
+	if update.Username == "" || update.Password == "" || update.Nama == "" || update.Gender == "" || update.NoTelp == "" || update.Email == "" {
+		error := errors.New("input tidak boleh kosong")
+		return nil, error
+
+	}
+
 	hashedPass, errHashed := HashPassword(update.Password)
 	if errHashed != nil {
 		fmt.Println("error hashing", errHashed.Error())
@@ -159,7 +165,7 @@ func UpdateAcc(db *sql.DB, update entity.User, NoTelp string) (sql.Result, error
 
 	result, errExec := statement.Exec(update.Username, hashedPass, update.Nama, update.Gender, update.NoTelp, update.Email)
 	if errExec != nil {
-		fmt.Println("error execute", errExec.Error())
+		fmt.Println("Nomor sudah terdaftar.")
 		return nil, errExec
 	} else {
 		row, _ := result.RowsAffected()
