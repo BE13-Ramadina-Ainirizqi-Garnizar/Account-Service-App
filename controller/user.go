@@ -225,21 +225,16 @@ func Delete(db *sql.DB, NoTelp string) (sql.Result, error) {
 
 func ProfilTeman(db *sql.DB, HpTeman string) ([]entity.User, error) {
 	query := fmt.Sprintf("select username, nama, gender, email from users where no_telp=%s", HpTeman)
-	result, err := db.Query(query)
-	if err != nil {
-		fmt.Println("error", err.Error())
-		return nil, err
-	}
+	result := db.QueryRow(query)
 
 	var dataTeman []entity.User
-	for result.Next() {
-		var userrow entity.User
-		errScan := result.Scan(&userrow.Username, &userrow.Nama, &userrow.Gender, &userrow.Email)
-		if errScan != nil {
-			fmt.Println("error scan", errScan.Error())
-			return nil, errScan
-		}
-		dataTeman = append(dataTeman, userrow)
+
+	var userrow entity.User
+	errScan := result.Scan(&userrow.Username, &userrow.Nama, &userrow.Gender, &userrow.Email)
+	if errScan != nil {
+		fmt.Println("Nomor yang anda tuju tidak terdaftar")
+		return nil, errScan
 	}
+	dataTeman = append(dataTeman, userrow)
 	return dataTeman, nil
 }
